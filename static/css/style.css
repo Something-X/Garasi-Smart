@@ -1,0 +1,115 @@
+body {
+    margin: 0;
+    font-family: Arial;
+    background: #eef2f7;
+}
+
+.navbar {
+    background: #243b6b;
+    color: white;
+    padding: 15px 30px;
+    display: flex;
+    justify-content: space-between;
+}
+
+.navbar a {
+    color: white;
+    text-decoration: none;
+}
+
+.container {
+    padding: 20px;
+}
+
+.grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 20px;
+}
+
+.card {
+    background: white;
+    padding: 20px;
+    border-radius: 12px;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+}
+
+.warning {
+    background: #ffeaa7;
+}
+
+.btn-open, .btn-close, .btn-setting {
+    display: block;
+    padding: 12px;
+    margin-top: 10px;
+    text-align: center;
+    border-radius: 8px;
+    text-decoration: none;
+    font-weight: bold;
+}
+
+.btn-open {
+    background: #2ecc71;
+    color: white;
+}
+
+.btn-close {
+    background: #e74c3c;
+    color: white;
+}
+
+.btn-setting {
+    background: #3498db;
+    color: white;
+}
+
+.open {
+    color: green;
+}
+
+.closed {
+    color: red;
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+table th, table td {
+    border: 1px solid #ddd;
+    padding: 8px;
+}
+
+.login-body {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+}
+
+.login-container {
+    background: white;
+    padding: 40px;
+    border-radius: 12px;
+    width: 300px;
+    text-align: center;
+}
+
+.login-container input {
+    width: 100%;
+    padding: 10px;
+    margin: 10px 0;
+}
+
+.login-container button {
+    width: 100%;
+    padding: 10px;
+    background: #243b6b;
+    color: white;
+    border: none;
+}
+
+.error {
+    color: red;
+}

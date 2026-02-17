@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Login - Garasi Smart</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/login.css') }}">
+</head>
+<body class="login-body">
+
+<div class="login-container">
+    
+    <div class="login-left">
+        <div class="decoration-box">
+            <div class="cube"></div> 
+        </div>
+        <h1>Garasi Smart</h1>
+        <p>Manage your garage intelligently.</p>
+    </div>
+
+    <div class="login-right">
+        <div class="form-content">
+            <h2>Welcome Back!</h2>
+            <p class="sub-title">Please enter your details to login.</p>
+
+            {% if error %}
+                <p class="error" style="color: red; background: #fee2e2; padding: 10px; border-radius: 5px; font-size: 0.9rem;">{{ error }}</p>
+            {% endif %}
+
+            {% with messages = get_flashed_messages(with_categories=true) %}
+                {% if messages %}
+                    {% for category, message in messages %}
+                        <div style="background: #dcfce7; color: #166534; padding: 10px; border-radius: 5px; margin-bottom: 10px; font-size: 0.9rem;">
+                            {{ message }}
+                        </div>
+                    {% endfor %}
+                {% endif %}
+            {% endwith %}
+
+            <form method="POST">
+                <div class="input-group">
+                    <label>Username</label>
+                    <input type="text" name="username" placeholder="Enter your username" required>
+                </div>
+                
+                <div class="input-group">
+                    <label>Password</label>
+                    <input type="password" name="password" placeholder="••••••••" required>
+                </div>
+
+                <button type="submit">Sign In</button>
+            </form>
+
+            <div class="hint-box" style="margin-top: 15px; text-align: center;">
+                <small>Belum punya akun? <a href="/register" style="color: #3b82f6; font-weight: bold;">Daftar di sini</a></small>
+            </div>
+            
+            <div class="hint-box" style="margin-top: 10px; border-top: 1px solid #eee; padding-top: 10px;">
+                <small>Admin Default: admin / 123</small>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+</body>
+</html>

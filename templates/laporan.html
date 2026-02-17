@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="id">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Laporan Aktivitas - Garasi Smart</title>
+    
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+    
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/admin_dashboard.css') }}">
+    
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/laporan.css') }}">
+</head>
+
+<body>
+
+    <nav class="navbar">
+        <div class="nav-container">
+            <div class="nav-brand">
+                <div class="brand-icon">
+                    <i class="fas fa-file-alt"></i>
+                </div>
+                <h2>Garasi<span class="text-primary">Smart</span></h2>
+            </div>
+            
+            <div class="nav-profile" onclick="toggleDropdown()">
+                <div class="user-info">
+                    <span class="greeting">Halo,</span>
+                    <span class="user-name">{{ username }}</span>
+                </div>
+                <div class="user-avatar">
+                    <i class="fas fa-user"></i>
+                </div>
+                
+                <div class="dropdown-menu" id="dropdownMenu">
+                    <a href="/logout" class="dropdown-item">
+                        <i class="fas fa-sign-out-alt"></i>
+                        <span>Keluar</span>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container">
+        
+        <div class="header-actions">
+            <div>
+                <a href="/dashboard" class="btn-back">
+                    <i class="fas fa-arrow-left"></i> Kembali ke Dashboard
+                </a>
+            </div>
+            <div>
+                <a href="/download_pdf" class="btn-pdf">
+                    <i class="fas fa-file-pdf"></i> Download PDF
+                </a>
+            </div>
+        </div>
+        
+        <div class="table-container">
+            <div class="report-title">
+                <i class="fas fa-history"></i>
+                <h2>Riwayat Aktivitas</h2>
+            </div>
+            
+            <p class="report-info">
+                Total Data: <strong>{{ logs|length }}</strong> aktivitas tercatat dalam sistem.
+            </p>
+            
+            <div class="table-responsive">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>No</th>
+                            <th>Pengguna</th>
+                            <th>Aksi</th>
+                            <th>Waktu</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for log in logs %}
+                        <tr>
+                            <td>{{ loop.index }}</td>
+                            <td>
+                                <strong>{{ log.username }}</strong>
+                            </td>
+                            <td>
+                                {% if log.action == 'Buka Pagar' %}
+                                    <span class="status-text status-open">
+                                        <i class="fas fa-door-open"></i> {{ log.action }}
+                                    </span>
+                                {% else %}
+                                    <span class="status-text status-closed">
+                                        <i class="fas fa-door-closed"></i> {{ log.action }}
+                                    </span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                <span class="time-badge">
+                                    <i class="far fa-clock"></i> {{ log.timestamp }}
+                                </span>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function toggleDropdown() {
+            const dropdown = document.getElementById('dropdownMenu');
+            dropdown.classList.toggle('show');
+        }
+
+        window.onclick = function(event) {
+            if (!event.target.matches('.nav-profile') && !event.target.closest('.nav-profile')) {
+                const dropdown = document.getElementById('dropdownMenu');
+                if (dropdown.classList.contains('show')) {
+                    dropdown.classList.remove('show');
+                }
+            }
+        }
+    </script>
+
+</body>
+</html>

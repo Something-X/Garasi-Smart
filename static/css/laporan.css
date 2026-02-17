@@ -1,0 +1,209 @@
+/* =========================================
+   LAPORAN.CSS
+   Style khusus untuk Halaman Laporan Aktivitas
+   ========================================= */
+
+/* --- 1. Header Actions (Tombol Atas) --- */
+.header-actions {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 24px;
+    flex-wrap: wrap;
+    gap: 15px;
+}
+
+/* Tombol Umum */
+.btn-back, .btn-pdf {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    padding: 12px 24px;
+    border-radius: 12px;
+    font-weight: 600;
+    font-size: 0.9rem;
+    text-decoration: none;
+    transition: all 0.3s ease;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+}
+
+/* Tombol Kembali (Putih/Clean) */
+.btn-back {
+    background: white;
+    color: #64748b; /* Slate 500 */
+    border: 1px solid #e2e8f0;
+}
+
+.btn-back:hover {
+    background: #f8fafc;
+    color: #3b82f6; /* Blue */
+    border-color: #3b82f6;
+    transform: translateX(-3px);
+}
+
+/* Tombol PDF (Merah) */
+.btn-pdf {
+    background: #ef4444;
+    color: white;
+    border: 1px solid #ef4444;
+}
+
+.btn-pdf:hover {
+    background: #dc2626;
+    box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3);
+    transform: translateY(-2px);
+}
+
+/* --- 2. Container Tabel (Card Style) --- */
+.table-container {
+    background: white;
+    border-radius: 16px;
+    padding: 30px;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+    border: 1px solid #e2e8f0;
+    animation: fadeIn 0.5s ease-out;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+/* Judul & Info */
+.report-title h2 {
+    font-size: 1.5rem;
+    font-weight: 800;
+    color: #1e293b; /* Dark Slate */
+    margin: 0;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.report-title i {
+    color: #3b82f6;
+    background: #eff6ff;
+    padding: 10px;
+    border-radius: 10px;
+    font-size: 1.2rem;
+}
+
+.report-info {
+    color: #64748b;
+    font-size: 0.95rem;
+    margin-top: 10px;
+    margin-bottom: 25px;
+    padding-bottom: 15px;
+    border-bottom: 1px solid #f1f5f9;
+}
+
+/* --- 3. Styling Tabel --- */
+/* Agar tabel bisa di-scroll di HP */
+.table-responsive {
+    overflow-x: auto;
+}
+
+table {
+    width: 100%;
+    border-collapse: separate; /* Penting untuk border-radius */
+    border-spacing: 0;
+}
+
+thead {
+    background: #f8fafc;
+}
+
+th {
+    padding: 16px;
+    text-align: left;
+    font-weight: 700;
+    font-size: 0.85rem;
+    color: #64748b;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    border-top: 1px solid #e2e8f0;
+    border-bottom: 2px solid #e2e8f0;
+}
+
+/* Rounded corners untuk header */
+th:first-child { border-top-left-radius: 10px; border-left: 1px solid #e2e8f0; }
+th:last-child { border-top-right-radius: 10px; border-right: 1px solid #e2e8f0; }
+
+td {
+    padding: 16px;
+    border-bottom: 1px solid #f1f5f9;
+    color: #334155;
+    font-size: 0.95rem;
+    vertical-align: middle;
+}
+
+td strong {
+    font-weight: 600;
+    color: #1e293b;
+}
+
+/* Hover Effect Baris */
+tbody tr {
+    transition: background 0.15s ease;
+}
+
+tbody tr:hover {
+    background: #f8fafc;
+}
+
+/* Kolom Nomor */
+td:first-child {
+    color: #94a3b8;
+    font-weight: 500;
+    width: 50px;
+    text-align: center;
+}
+th:first-child { text-align: center; }
+
+/* Status Text (Buka/Tutup) */
+.status-text {
+    font-weight: 600;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-size: 0.85rem;
+}
+
+.status-open {
+    background: #dcfce7;
+    color: #10b981; /* Green */
+}
+
+.status-closed {
+    background: #fee2e2;
+    color: #ef4444; /* Red */
+}
+
+/* Waktu */
+.time-badge {
+    font-family: monospace;
+    background: #f1f5f9;
+    padding: 4px 8px;
+    border-radius: 6px;
+    color: #475569;
+    font-size: 0.9rem;
+}
+
+/* --- Responsive --- */
+@media (max-width: 768px) {
+    .header-actions {
+        flex-direction: column-reverse;
+        align-items: stretch;
+    }
+    
+    .btn-back, .btn-pdf {
+        width: 100%;
+    }
+    
+    .table-container {
+        padding: 20px;
+    }
+}

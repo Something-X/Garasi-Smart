@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="id">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pengaturan Sistem - Garasi Smart</title>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/admin_dashboard.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/settings.css') }}">
+</head>
+
+<body>
+
+    <nav class="navbar">
+        <div class="nav-container">
+            <div class="nav-brand">
+                <div class="brand-icon">
+                    <i class="fas fa-cog"></i>
+                </div>
+                <h2>Garasi<span class="text-primary">Smart</span></h2>
+            </div>
+            
+            <div class="nav-profile" onclick="toggleDropdown()">
+                <div class="user-info">
+                    <span class="greeting">Halo,</span>
+                    <span class="user-name">{{ username }}</span>
+                </div>
+                <div class="user-avatar">
+                    <i class="fas fa-user"></i>
+                </div>
+                
+                <div class="dropdown-menu" id="dropdownMenu">
+                    <a href="/logout" class="dropdown-item">
+                        <i class="fas fa-sign-out-alt"></i>
+                        <span>Keluar</span>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container settings-container">
+
+        {% with messages = get_flashed_messages() %}
+        {% if messages %}
+        <div class="alert-message">
+            <i class="fas fa-check-circle"></i> {{ messages[0] }}
+        </div>
+        {% endif %}
+        {% endwith %}
+
+        <div class="page-title">
+            <a href="/dashboard" class="btn-back">
+                <i class="fas fa-arrow-left"></i> Kembali
+            </a>
+        </div>
+
+        <div class="settings-section">
+            <h3><i class="fas fa-bell"></i> Pengaturan Notifikasi</h3>
+            
+            <form method="POST" action="/update_setting" id="settingsForm">
+                <div class="form-row">
+                    <label><i class="fas fa-clock"></i> Batas Waktu Notifikasi (Menit)</label>
+                    <input type="number" name="limit" value="{{ setting.notification_limit if setting else 1 }}" min="1" max="60" required>
+                    <small>Sistem akan mengirim peringatan jika pintu terbuka melebihi waktu ini</small>
+                </div>
+                
+                <button type="submit" class="btn-save">
+                    <i class="fas fa-save"></i> Simpan Pengaturan
+                </button>
+            </form>
+        </div>
+        
+        <div class="settings-section">
+            <h3><i class="fas fa-info-circle"></i> Informasi Sistem</h3>
+            <p style="color: #64748b; line-height: 1.8;">
+                <strong>Versi Aplikasi:</strong> 1.0.0<br>
+                <strong>Status Sistem:</strong> <span style="color: #10b981;">● Aktif</span><br>
+                <strong>Database:</strong> SQLite<br>
+            </p>
+        </div>
+    </div>
+
+    <script>
+        function toggleDropdown() {
+            const dropdown = document.getElementById('dropdownMenu');
+            dropdown.classList.toggle('show');
+        }
+
+        window.onclick = function(event) {
+            if (!event.target.matches('.nav-profile') && !event.target.closest('.nav-profile')) {
+                const dropdown = document.getElementById('dropdownMenu');
+                if (dropdown.classList.contains('show')) {
+                    dropdown.classList.remove('show');
+                }
+            }
+        }
+    </script>
+
+</body>
+</html>

@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Daftar Akun - Garasi Smart</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/login.css') }}">
+</head>
+
+<body class="login-body">
+
+    <div class="login-container">
+
+        <div class="login-left">
+            <div class="decoration-box">
+                <div class="cube"></div>
+            </div>
+            <h1>Bergabunglah</h1>
+            <p>Registrasi untuk akses sistem Garasi Smart.</p>
+        </div>
+
+        <div class="login-right">
+            <div class="form-content">
+                <h2>Buat Akun Baru</h2>
+                <p class="sub-title">Isi data di bawah untuk mendaftar.</p>
+
+                {% with messages = get_flashed_messages(with_categories=true) %}
+                {% if messages %}
+                {% for category, message in messages %}
+                <div class="alert-msg {{ 'error' if category == 'error' else 'success' }}">
+                    {{ message }}
+                </div>
+                {% endfor %}
+                {% endif %}
+                {% endwith %}
+
+                <form method="POST" action="/register" id="registerForm">
+                    <div class="input-group">
+                        <label>Username</label>
+                        <input type="text" name="username" placeholder="Buat username unik" required>
+                    </div>
+
+                    <div class="input-group">
+                        <label>Email (Penting)</label>
+                        <input type="email" name="email" placeholder="email@anda.com" required>
+                    </div>
+
+                    <div class="input-group">
+                        <label>Password</label>
+                        <input type="password" name="password" placeholder="••••••••" required>
+                    </div>
+
+                    <button type="submit" id="btnSubmit">Daftar Sekarang</button>
+                </form>
+
+                <div class="hint-box" style="margin-top: 20px; text-align: center;">
+                    <small>Sudah punya akun? <a href="/" style="color: #3b82f6; font-weight: bold;">Login di
+                            sini</a></small>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <script>
+        document.getElementById('registerForm').addEventListener('submit', function () {
+            const btn = document.getElementById('btnSubmit');
+            // Ubah teks tombol dan matikan agar tidak bisa diklik lagi
+            btn.innerHTML = 'Memproses...';
+            btn.style.opacity = '0.7';
+            btn.style.cursor = 'not-allowed';
+            btn.disabled = true;
+        });
+    </script>
+
+</body>
+
+</html>

@@ -1,0 +1,310 @@
+<!DOCTYPE html>
+<html lang="id">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard Admin - Garasi Smart</title>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/admin_dashboard.css') }}">
+</head>
+
+<body>
+
+    <script id="chart-data" type="application/json">
+    {
+        "labels": {{ chart_labels | safe }},
+        "buka": {{ chart_buka | safe }},
+        "tutup": {{ chart_tutup | safe }}
+    }
+    </script>
+
+    <nav class="navbar">
+        <div class="nav-container">
+            <div class="nav-brand">
+                <div class="brand-icon">
+                    <i class="fas fa-warehouse"></i>
+                </div>
+                <h2>Garasi<span class="text-primary">Smart</span></h2>
+            </div>
+            
+            <div class="nav-profile" onclick="toggleDropdown()">
+                <div class="user-info">
+                    <span class="greeting">Halo,</span>
+                    <span class="user-name">{{ username }}</span>
+                </div>
+                <div class="user-avatar">
+                    <i class="fas fa-user"></i>
+                </div>
+                
+                <div class="dropdown-menu" id="dropdownMenu">
+                    <a href="/logout" class="dropdown-item">
+                        <i class="fas fa-sign-out-alt"></i>
+                        <span>Keluar</span>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <main class="container">
+        
+        <header class="dashboard-header">
+            <div>
+                <h1>Dashboard Monitoring</h1>
+                <p class="subtitle">Pantau status garasi, user, dan statistik</p>
+            </div>
+            <div class="date-display">
+                <i class="far fa-calendar-alt"></i>
+                <span id="currentDate"></span>
+            </div>
+        </header>
+
+        {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+        <div class="flash-container">
+            {% for category, message in messages %}
+            <div class="alert-message slide-in {{ category }}">
+                <div class="alert-icon">
+                    <i class="fas {{ 'fa-check' if category == 'success' else 'fa-exclamation' }}"></i>
+                </div>
+                <span>{{ message }}</span>
+            </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+        {% endwith %}
+
+        <div class="dashboard-grid">
+
+            <div class="grid-column">
+                <div class="card status-card">
+                    <div class="card-header">
+                        <h3>Status Pagar</h3>
+                        <span class="badge {{ 'badge-open' if status == 'Terbuka' else 'badge-closed' }}">Live</span>
+                    </div>
+                    <div class="card-body centered">
+                        <div class="status-visual-wrapper">
+                            {% if status == 'Terbuka' %}
+                            <div class="gate-animation open">
+                                <div class="pulse-ring"></div>
+                                <div class="icon-circle">
+                                    <i class="fas fa-door-open"></i>
+                                </div>
+                            </div>
+                            <h2 class="status-text text-open">Terbuka</h2>
+                            <p class="status-sub">Pagar sedang terbuka</p>
+                            {% else %}
+                            <div class="gate-animation closed">
+                                <div class="icon-circle">
+                                    <i class="fas fa-door-closed"></i>
+                                </div>
+                            </div>
+                            <h2 class="status-text text-closed">Tertutup</h2>
+                            <p class="status-sub">Pagar terkunci aman</p>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card stats-card">
+                    <div class="card-header">
+                        <h3>Aktivitas Minggu Ini</h3>
+                    </div>
+                    <div class="card-body">
+                        <div class="chart-wrapper">
+                            <canvas id="activityChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="grid-column">
+                
+                <div class="card notification-card">
+                    <div class="card-header">
+                        <h3>Sistem Peringatan</h3>
+                    </div>
+                    <div class="card-body">
+                        {% if alert %}
+                        <div class="alert-state warning">
+                            <div class="state-icon">
+                                <i class="fas fa-exclamation-triangle"></i>
+                            </div>
+                            <div class="state-content">
+                                <h4>Peringatan Dini!</h4>
+                                <p>Terbuka > <strong>{{ duration }}</strong></p>
+                            </div>
+                        </div>
+                        <a href="/send_alert" class="btn btn-warning full-width">
+                            <i class="fas fa-paper-plane"></i> Kirim Notifikasi
+                        </a>
+                        {% else %}
+                        <div class="alert-state safe">
+                            <div class="state-icon">
+                                <i class="fas fa-shield-alt"></i>
+                            </div>
+                            <div class="state-content">
+                                <h4>Kondisi Aman</h4>
+                                <p>Tidak ada anomali.</p>
+                            </div>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <div class="card settings-card">
+                    <div class="card-header">
+                        <h3>Menu Cepat</h3>
+                    </div>
+                    <div class="card-body settings-list">
+                        <a href="/settings" class="setting-item">
+                            <div class="setting-icon blue">
+                                <i class="fas fa-cog"></i>
+                            </div>
+                            <div class="setting-text">
+                                <h4>Pengaturan Sistem</h4>
+                                <p>Atur limit notifikasi</p>
+                            </div>
+                            <i class="fas fa-chevron-right arrow"></i>
+                        </a>
+
+                        <a href="/laporan" class="setting-item">
+                            <div class="setting-icon purple">
+                                <i class="fas fa-file-pdf"></i>
+                            </div>
+                            <div class="setting-text">
+                                <h4>Laporan PDF</h4>
+                                <p>Download data aktivitas</p>
+                            </div>
+                            <i class="fas fa-chevron-right arrow"></i>
+                        </a>
+                    </div>
+                </div>
+
+            </div>
+
+            <div class="grid-column wide">
+                
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="text-warning"><i class="fas fa-user-clock"></i> Menunggu Persetujuan</h3>
+                    </div>
+                    <div class="card-body">
+                        {% if pending_users %}
+                        <div class="table-responsive">
+                            <table class="custom-table">
+                                <tbody>
+                                    {% for user in pending_users %}
+                                    <tr>
+                                        <td><strong>{{ user.username }}</strong><br><span class="text-sm text-muted">{{ user.email }}</span></td>
+                                        <td class="text-right">
+                                            <div class="action-buttons">
+                                                <a href="/approve/{{ user.id }}" class="btn-icon btn-approve" title="Terima"><i class="fas fa-check"></i></a>
+                                                <a href="/reject/{{ user.id }}" class="btn-icon btn-reject" title="Tolak" onclick="return confirm('Tolak?')"><i class="fas fa-times"></i></a>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                        {% else %}
+                        <div class="empty-state">
+                            <p>Tidak ada permintaan baru.</p>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <div class="card" style="margin-top: 20px;">
+                    <div class="card-header">
+                        <h3 class="text-primary"><i class="fas fa-users"></i> User Terdaftar</h3>
+                    </div>
+                    <div class="card-body">
+                        {% if active_users %}
+                        <div class="table-responsive">
+                            <table class="custom-table">
+                                <thead>
+                                    <tr>
+                                        <th>Username</th>
+                                        <th>Email</th>
+                                        <th>Status</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for user in active_users %}
+                                    <tr>
+                                        <td>
+                                            <div class="user-row">
+                                                <div class="avatar-sm">{{ user.username[0] | upper }}</div>
+                                                <span>{{ user.username }}</span>
+                                            </div>
+                                        </td>
+                                        <td>{{ user.email }}</td>
+                                        <td><span class="badge-status">Aktif</span></td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                        {% else %}
+                        <div class="empty-state">
+                            <p>Belum ada user aktif.</p>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+
+            </div>
+
+        </div>
+    </main>
+
+    <script>
+        const dateOptions = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+        document.getElementById('currentDate').textContent = new Date().toLocaleDateString('id-ID', dateOptions);
+
+        const ctx = document.getElementById('activityChart');
+        if (ctx) {
+            const chartData = JSON.parse(document.getElementById('chart-data').textContent);
+            Chart.defaults.font.family = "'Plus Jakarta Sans', sans-serif";
+            
+            new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: chartData.labels,
+                    datasets: [
+                        {
+                            label: 'Buka',
+                            data: chartData.buka,
+                            backgroundColor: '#10b981',
+                            borderRadius: 4,
+                            barThickness: 12
+                        },
+                        {
+                            label: 'Tutup',
+                            data: chartData.tutup,
+                            backgroundColor: '#ef4444',
+                            borderRadius: 4,
+                            barThickness: 12
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        x: { stacked: false, grid: { display: false } },
+                        y: { beginAtZero: true, grid: { borderDash: [5, 5] } }
+                    }
+                }
+            });
+        }
+        function toggleDropdown() { document.getElementById('dropdownMenu').classList.toggle('show'); }
+        window.onclick = function(e) { if (!e.target.closest('.nav-profile')) document.getElementById('dropdownMenu').classList.remove('show'); }
+    </script>
+</body>
+</html>

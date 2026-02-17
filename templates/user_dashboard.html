@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="id">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard User - Garasi Smart</title>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/admin_dashboard.css') }}">
+</head>
+
+<body>
+
+    <nav class="navbar">
+        <div class="nav-container">
+            <div class="nav-brand">
+                <div class="brand-icon">
+                    <i class="fas fa-home"></i>
+                </div>
+                <h2>Garasi<span class="text-primary">Smart</span></h2>
+            </div>
+            
+            <div class="nav-profile" onclick="toggleDropdown()">
+                <div class="user-info">
+                    <span class="greeting">Halo,</span>
+                    <span class="user-name">{{ username }}</span>
+                </div>
+                <div class="user-avatar">
+                    <i class="fas fa-user"></i>
+                </div>
+                
+                <div class="dropdown-menu" id="dropdownMenu">
+                    <a href="/logout" class="dropdown-item">
+                        <i class="fas fa-sign-out-alt"></i>
+                        <span>Keluar</span>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <main class="container">
+        
+        <header class="dashboard-header">
+            <div>
+                <h1>Dashboard User</h1>
+                <p class="subtitle">Kontrol pagar garasi Anda dengan mudah</p>
+            </div>
+            <div class="date-display">
+                <i class="far fa-calendar-alt"></i>
+                <span id="currentDate"></span>
+            </div>
+        </header>
+
+        {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+        <div class="flash-container">
+            {% for category, message in messages %}
+            <div class="alert-message slide-in {{ category }}">
+                <div class="alert-icon">
+                    <i class="fas {{ 'fa-check' if category == 'success' else 'fa-exclamation' }}"></i>
+                </div>
+                <span>{{ message }}</span>
+            </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+        {% endwith %}
+
+        <div class="dashboard-grid" style="grid-template-columns: 1fr 1fr;">
+
+            <div class="card control-card">
+                <div class="card-header">
+                    <h3><i class="fas fa-gamepad" style="color: #64748b;"></i> Kontrol Akses</h3>
+                </div>
+                <div class="card-body centered" style="padding: 30px 20px;">
+                    {% if status == 'Terbuka' %}
+                        <button class="btn-control disabled" disabled>
+                            <i class="fas fa-lock-open"></i> Buka Pagar
+                        </button>
+                        <a href="/close" class="btn-control btn-close">
+                            <i class="fas fa-lock"></i> Tutup Pagar
+                        </a>
+                    {% else %}
+                        <a href="/open" class="btn-control btn-open">
+                            <i class="fas fa-lock-open"></i> Buka Pagar
+                        </a>
+                        <button class="btn-control disabled" disabled>
+                            <i class="fas fa-lock"></i> Tutup Pagar
+                        </button>
+                    {% endif %}
+                </div>
+            </div>
+
+            <div class="card status-card">
+                <div class="card-header">
+                    <h3>Status Saat Ini</h3>
+                    <span class="badge {{ 'badge-open' if status == 'Terbuka' else 'badge-closed' }}">Live</span>
+                </div>
+                <div class="card-body centered">
+                    <div class="status-visual-wrapper">
+                        {% if status == 'Terbuka' %}
+                        <div class="gate-animation open">
+                            <div class="pulse-ring"></div>
+                            <div class="icon-circle">
+                                <i class="fas fa-door-open"></i>
+                            </div>
+                        </div>
+                        <h2 class="status-text text-open">Terbuka</h2>
+                        <p class="status-sub">Akses garasi sedang terbuka</p>
+                        {% else %}
+                        <div class="gate-animation closed">
+                            <div class="icon-circle">
+                                <i class="fas fa-door-closed"></i>
+                            </div>
+                        </div>
+                        <h2 class="status-text text-closed">Tertutup</h2>
+                        <p class="status-sub">Garasi terkunci aman</p>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+
+            <div class="card notification-card" style="grid-column: span 2;">
+                <div class="card-header">
+                    <h3>Pusat Notifikasi</h3>
+                </div>
+                <div class="card-body">
+                    {% if alert %}
+                    <div class="alert-state warning">
+                        <div class="state-icon">
+                            <i class="fas fa-exclamation-triangle"></i>
+                        </div>
+                        <div class="state-content">
+                            <h4>Peringatan Keamanan!</h4>
+                            <p>Pagar telah terbuka selama lebih dari <strong>{{ duration }}</strong>. Mohon segera ditutup.</p>
+                        </div>
+                    </div>
+                    {% else %}
+                    <div class="alert-state safe">
+                        <div class="state-icon">
+                            <i class="fas fa-shield-alt"></i>
+                        </div>
+                        <div class="state-content">
+                            <h4>Kondisi Aman</h4>
+                            <p>Tidak ada peringatan aktif saat ini.</p>
+                        </div>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+
+        </div>
+    </main>
+
+    <script>
+        const dateOptions = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+        document.getElementById('currentDate').textContent = new Date().toLocaleDateString('id-ID', dateOptions);
+
+        function toggleDropdown() { document.getElementById('dropdownMenu').classList.toggle('show'); }
+        window.onclick = function(e) { if (!e.target.closest('.nav-profile')) document.getElementById('dropdownMenu').classList.remove('show'); }
+    </script>
+</body>
+</html>
