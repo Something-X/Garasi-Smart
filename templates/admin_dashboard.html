@@ -110,8 +110,17 @@
                 </div>
 
                 <div class="card stats-card">
-                    <div class="card-header">
-                        <h3>Aktivitas Minggu Ini</h3>
+                    <div class="card-header" style="display: flex; justify-content: space-between; align-items: center;">
+                        <h3>Statistik Aktivitas</h3>
+                        <style>
+                            .filter-btn-custom { padding: 4px 10px; font-size: 12px; border-radius: 4px; text-decoration: none; color: #4b5563; background: transparent; transition: 0.2s; }
+                            .filter-btn-custom.active { color: #fff !important; background: #3b82f6 !important; }
+                        </style>
+                        <div class="chart-filters" style="display: flex; gap: 5px; background: #f3f4f6; padding: 4px; border-radius: 6px;">
+                            <a href="?filter=harian" class="filter-btn-custom {{ 'active' if current_filter == 'harian' else '' }}">Harian</a>
+                            <a href="?filter=mingguan" class="filter-btn-custom {{ 'active' if current_filter == 'mingguan' else '' }}">Mingguan</a>
+                            <a href="?filter=bulanan" class="filter-btn-custom {{ 'active' if current_filter == 'bulanan' else '' }}">Bulanan</a>
+                        </div>
                     </div>
                     <div class="card-body">
                         <div class="chart-wrapper">

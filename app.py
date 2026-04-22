@@ -31,6 +31,7 @@ SMTP_PORT = 587
 def get_db():
     conn = sqlite3.connect(DATABASE)
     conn.row_factory = sqlite3.Row
+    conn.set_trace_callback(print) # Baris ini akan mencetak setiap query SQL yg dijalankan ke terminal
     return conn
 
 # ========================
@@ -235,34 +236,54 @@ def dashboard():
         active_users = conn.execute("SELECT * FROM users WHERE is_active = 1").fetchall()
         logs = conn.execute("SELECT * FROM activity_logs ORDER BY id DESC LIMIT 5").fetchall()
         
-        # === PERBAIKAN LOGIKA CHART (REAL DATA 7 HARI TERAKHIR) ===
+        # === PERBAIKAN LOGIKA CHART DENGAN FILTER ===
+        chart_filter = request.args.get('filter', 'harian')
         labels = []
         data_buka = []
         data_tutup = []
         
-        # Loop 7 hari ke belakang
-        for i in range(6, -1, -1):
-            date_check = (datetime.now() - timedelta(days=i)).strftime("%Y-%m-%d")
-            # Ambil nama hari (Senin, Selasa, dst)
-            day_name = (datetime.now() - timedelta(days=i)).strftime("%A") 
-            # Translate hari ke Indo (Optional, sederhana)
-            days_map = {'Monday':'Senin', 'Tuesday':'Selasa', 'Wednesday':'Rabu', 'Thursday':'Kamis', 'Friday':'Jumat', 'Saturday':'Sabtu', 'Sunday':'Minggu'}
-            labels.append(days_map.get(day_name, day_name))
-            
-            # Hitung 'Buka Pagar'
-            count_buka = conn.execute(
-                "SELECT COUNT(*) FROM activity_logs WHERE action='Buka Pagar' AND timestamp LIKE ?", 
-                (f"{date_check}%",)
-            ).fetchone()[0]
-            
-            # Hitung 'Tutup Pagar'
-            count_tutup = conn.execute(
-                "SELECT COUNT(*) FROM activity_logs WHERE action='Tutup Pagar' AND timestamp LIKE ?", 
-                (f"{date_check}%",)
-            ).fetchone()[0]
-            
-            data_buka.append(count_buka)
-            data_tutup.append(count_tutup)
+        if chart_filter == 'bulanan':
+            for i in range(5, -1, -1):
+                d = datetime.now()
+                month = d.month - i
+                year = d.year
+                while month <= 0:
+                    month += 12
+                    year -= 1
+                month_str = f"{year}-{month:02d}"
+                month_names = ["Jan", "Feb", "Mar", "Apr", "Mei", "Jun", "Jul", "Ags", "Sep", "Okt", "Nov", "Des"]
+                labels.append(f"{month_names[month-1]} {year}")
+                
+                count_buka = conn.execute("SELECT COUNT(*) FROM activity_logs WHERE action='Buka Pagar' AND timestamp LIKE ?", (f"{month_str}%",)).fetchone()[0]
+                count_tutup = conn.execute("SELECT COUNT(*) FROM activity_logs WHERE action='Tutup Pagar' AND timestamp LIKE ?", (f"{month_str}%",)).fetchone()[0]
+                data_buka.append(count_buka)
+                data_tutup.append(count_tutup)
+        elif chart_filter == 'mingguan':
+            for i in range(3, -1, -1):
+                end_date = datetime.now() - timedelta(days=i*7)
+                start_date = end_date - timedelta(days=6)
+                
+                lbl = f"{start_date.strftime('%d %b')} - {end_date.strftime('%d %b')}"
+                labels.append(lbl)
+                
+                sd_str = start_date.strftime("%Y-%m-%d 00:00:00")
+                ed_str = end_date.strftime("%Y-%m-%d 23:59:59")
+                
+                count_buka = conn.execute("SELECT COUNT(*) FROM activity_logs WHERE action='Buka Pagar' AND timestamp BETWEEN ? AND ?", (sd_str, ed_str)).fetchone()[0]
+                count_tutup = conn.execute("SELECT COUNT(*) FROM activity_logs WHERE action='Tutup Pagar' AND timestamp BETWEEN ? AND ?", (sd_str, ed_str)).fetchone()[0]
+                data_buka.append(count_buka)
+                data_tutup.append(count_tutup)
+        else: # harian (7 hari terakhir)
+            for i in range(6, -1, -1):
+                date_check = (datetime.now() - timedelta(days=i)).strftime("%Y-%m-%d")
+                day_name = (datetime.now() - timedelta(days=i)).strftime("%A") 
+                days_map = {'Monday':'Senin', 'Tuesday':'Selasa', 'Wednesday':'Rabu', 'Thursday':'Kamis', 'Friday':'Jumat', 'Saturday':'Sabtu', 'Sunday':'Minggu'}
+                labels.append(days_map.get(day_name, day_name))
+                
+                count_buka = conn.execute("SELECT COUNT(*) FROM activity_logs WHERE action='Buka Pagar' AND timestamp LIKE ?", (f"{date_check}%",)).fetchone()[0]
+                count_tutup = conn.execute("SELECT COUNT(*) FROM activity_logs WHERE action='Tutup Pagar' AND timestamp LIKE ?", (f"{date_check}%",)).fetchone()[0]
+                data_buka.append(count_buka)
+                data_tutup.append(count_tutup)
 
         # Hitung Total Hari Ini
         today = datetime.now().strftime("%Y-%m-%d")
@@ -281,7 +302,8 @@ def dashboard():
                                active_users=active_users,
                                chart_labels=json.dumps(labels),
                                chart_buka=json.dumps(data_buka),
-                               chart_tutup=json.dumps(data_tutup))
+                               chart_tutup=json.dumps(data_tutup),
+                               current_filter=chart_filter)
     else:
         conn.close()
         return render_template("user_dashboard.html",
@@ -388,21 +410,35 @@ def settings():
     conn.close()
     return render_template("settings.html", username=session["username"], setting=setting)
 
+def get_filtered_logs(filter_type):
+    conn = get_db()
+    if filter_type == 'harian':
+        today = datetime.now().strftime("%Y-%m-%d")
+        logs = conn.execute("SELECT * FROM activity_logs WHERE timestamp LIKE ? ORDER BY id DESC", (f"{today}%",)).fetchall()
+    elif filter_type == 'mingguan':
+        start_date = (datetime.now() - timedelta(days=7)).strftime("%Y-%m-%d 00:00:00")
+        logs = conn.execute("SELECT * FROM activity_logs WHERE timestamp >= ? ORDER BY id DESC", (start_date,)).fetchall()
+    elif filter_type == 'bulanan':
+        start_date = (datetime.now() - timedelta(days=30)).strftime("%Y-%m-%d 00:00:00")
+        logs = conn.execute("SELECT * FROM activity_logs WHERE timestamp >= ? ORDER BY id DESC", (start_date,)).fetchall()
+    else:
+        logs = conn.execute("SELECT * FROM activity_logs ORDER BY id DESC").fetchall()
+    conn.close()
+    return logs
+
 @app.route("/laporan")
 def laporan():
     if session.get("role") != "admin": return redirect("/")
-    conn = get_db()
-    logs = conn.execute("SELECT * FROM activity_logs ORDER BY id DESC").fetchall()
-    conn.close()
-    return render_template("laporan.html", logs=logs, username=session["username"])
+    filter_type = request.args.get('filter', 'semua')
+    logs = get_filtered_logs(filter_type)
+    return render_template("laporan.html", logs=logs, username=session["username"], current_filter=filter_type)
 
 @app.route("/download_pdf")
 def download_pdf():
     if session.get("role") != "admin": return redirect("/")
-    conn = get_db()
-    logs = conn.execute("SELECT * FROM activity_logs ORDER BY id DESC").fetchall()
-    conn.close()
-    return send_file(generate_pdf_report(logs), mimetype='application/pdf', as_attachment=True, download_name='laporan.pdf')
+    filter_type = request.args.get('filter', 'semua')
+    logs = get_filtered_logs(filter_type)
+    return send_file(generate_pdf_report(logs), mimetype='application/pdf', as_attachment=True, download_name=f'laporan_{filter_type}.pdf')
 
 if __name__ == "__main__":
     app.run(debug=True)

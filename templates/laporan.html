@@ -47,14 +47,20 @@
 
     <div class="container">
         
-        <div class="header-actions">
+        <div class="header-actions" style="display: flex; justify-content: space-between; align-items: center;">
             <div>
                 <a href="/dashboard" class="btn-back">
-                    <i class="fas fa-arrow-left"></i> Kembali ke Dashboard
+                    <i class="fas fa-arrow-left"></i> Dashboard
                 </a>
             </div>
-            <div>
-                <a href="/download_pdf" class="btn-pdf">
+            <div style="display: flex; gap: 10px; align-items: center;">
+                <select onchange="window.location.href='?filter='+this.value" style="padding: 10px 15px; border: 1px solid #e5e7eb; border-radius: 8px; font-family: inherit; font-size: 14px; background: white; outline: none; cursor: pointer; color: #4b5563;">
+                    <option value="semua" {% if current_filter == 'semua' %}selected{% endif %}>Semua Waktu</option>
+                    <option value="harian" {% if current_filter == 'harian' %}selected{% endif %}>Hari Ini</option>
+                    <option value="mingguan" {% if current_filter == 'mingguan' %}selected{% endif %}>7 Hari Terakhir</option>
+                    <option value="bulanan" {% if current_filter == 'bulanan' %}selected{% endif %}>30 Hari Terakhir</option>
+                </select>
+                <a href="/download_pdf?filter={{ current_filter }}" class="btn-pdf">
                     <i class="fas fa-file-pdf"></i> Download PDF
                 </a>
             </div>
