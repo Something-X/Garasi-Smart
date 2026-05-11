@@ -54,15 +54,43 @@
                 </a>
             </div>
             <div style="display: flex; gap: 10px; align-items: center;">
-                <select onchange="window.location.href='?filter='+this.value" style="padding: 10px 15px; border: 1px solid #e5e7eb; border-radius: 8px; font-family: inherit; font-size: 14px; background: white; outline: none; cursor: pointer; color: #4b5563;">
-                    <option value="semua" {% if current_filter == 'semua' %}selected{% endif %}>Semua Waktu</option>
-                    <option value="harian" {% if current_filter == 'harian' %}selected{% endif %}>Hari Ini</option>
-                    <option value="mingguan" {% if current_filter == 'mingguan' %}selected{% endif %}>7 Hari Terakhir</option>
-                    <option value="bulanan" {% if current_filter == 'bulanan' %}selected{% endif %}>30 Hari Terakhir</option>
-                </select>
                 <a href="/download_pdf?filter={{ current_filter }}" class="btn-pdf">
                     <i class="fas fa-file-pdf"></i> Download PDF
                 </a>
+            </div>
+        </div>
+
+        <!-- Filter Section -->
+        <div class="filter-section">
+            <div class="filter-container">
+                <!-- Search Bar -->
+                <div class="filter-group">
+                    <label for="searchInput"><i class="fas fa-search"></i> Cari</label>
+                    <input type="text" id="searchInput" class="search-input" placeholder="Cari nama pengguna atau aksi...">
+                </div>
+
+                <!-- Status Filter (Buka/Tutup) -->
+                <div class="filter-group">
+                    <label for="statusFilter"><i class="fas fa-filter"></i> Status</label>
+                    <select id="statusFilter" class="filter-select">
+                        <option value="">Semua Status</option>
+                        <option value="Buka Pagar">Buka Pagar</option>
+                        <option value="Tutup Pagar">Tutup Pagar</option>
+                    </select>
+                </div>
+
+                <!-- Date Filter -->
+                <div class="filter-group">
+                    <label for="dateFilter"><i class="fas fa-calendar-alt"></i> Tanggal</label>
+                    <input type="date" id="dateFilter" class="filter-select">
+                </div>
+
+                <!-- Reset Button -->
+                <div class="filter-group">
+                    <button id="resetBtn" class="btn-reset" onclick="resetFilters()">
+                        <i class="fas fa-redo"></i> Reset
+                    </button>
+                </div>
             </div>
         </div>
         
@@ -131,6 +159,62 @@
                 }
             }
         }
+
+        // Filter Functionality
+        function filterTable() {
+            const searchInput = document.getElementById('searchInput').value.toLowerCase();
+            const statusFilter = document.getElementById('statusFilter').value;
+            const dateFilter = document.getElementById('dateFilter').value;
+            const tableRows = document.querySelectorAll('table tbody tr');
+            let visibleCount = 0;
+
+            tableRows.forEach(row => {
+                const username = row.cells[1].textContent.toLowerCase();
+                const action = row.cells[2].textContent.toLowerCase();
+                const actionValue = row.cells[2].querySelector('.status-text').textContent.trim();
+                const timestamp = row.cells[3].textContent.trim();
+
+                // Check search filter
+                const searchMatch = username.includes(searchInput) || action.includes(searchInput);
+
+                // Check status filter
+                const statusMatch = statusFilter === '' || actionValue.includes(statusFilter);
+
+                // Check date filter
+                let dateMatch = true;
+                if (dateFilter) {
+                    // Extract date from timestamp (format: YYYY-MM-DD HH:MM:SS or similar)
+                    const rowDate = timestamp.split(' ')[0]; // Get only date part
+                    dateMatch = rowDate === dateFilter;
+                }
+
+                // Show or hide row
+                if (searchMatch && statusMatch && dateMatch) {
+                    row.style.display = '';
+                    visibleCount++;
+                } else {
+                    row.style.display = 'none';
+                }
+            });
+
+            // Update total count
+            const totalElement = document.querySelector('.report-info strong');
+            if (totalElement) {
+                totalElement.textContent = visibleCount;
+            }
+        }
+
+        function resetFilters() {
+            document.getElementById('searchInput').value = '';
+            document.getElementById('statusFilter').value = '';
+            document.getElementById('dateFilter').value = '';
+            filterTable();
+        }
+
+        // Add event listeners
+        document.getElementById('searchInput').addEventListener('keyup', filterTable);
+        document.getElementById('statusFilter').addEventListener('change', filterTable);
+        document.getElementById('dateFilter').addEventListener('change', filterTable);
     </script>
 
 </body>
